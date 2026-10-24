@@ -21,7 +21,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 RENDER_GRAPHQL_URL = "https://api.render.com/graphql"
 session = os.getenv("session")
 cookie = os.getenv("cookie")
-
+authorization = os.getenv("authorization")
 class DemoRequest(BaseModel):
     label: str = Field(default="test", min_length=1, max_length=80)
 
@@ -123,7 +123,7 @@ async def render_graphql_test(body: DemoRequest) -> dict[str, Any]:
         headers={
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer INVALID_TEST_TOKEN_DO_NOT_USE",
+            "Authorization": authorization,
             "User-Agent": "GraphQL-Request-Lab/1.4",
         },
     )
@@ -158,7 +158,7 @@ async def render_graphql_test(body: DemoRequest) -> dict[str, Any]:
         "method": "POST",
         "operationName": payload["operationName"],
         "request_sent": True,
-        "authentication": "deliberately-invalid-test-token",
+        "authentication": authorization,
         "http_status": status_code,
         "response_summary": summarize_response(response_bytes),
         "note": (
