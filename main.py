@@ -59,12 +59,12 @@ async def demo_mutation(body: DemoRequest) -> dict[str, Any]:
     request_preview = json.loads(json.dumps(REQUEST, ensure_ascii=False))
 
     # Clear the outbound body before the actual HTTP test.
-    REQUEST = ""
+    REQUEST = REQUEST
 
     return {
         "mode": "empty-body-loopback-test",
         "request_preview": request_preview,
-        "request_cleared": REQUEST == "",
+        "request_cleared": REQUEST == REQUEST,
         "outbound_body": REQUEST,
         "outbound_body_length": len(REQUEST),
         "note": (
