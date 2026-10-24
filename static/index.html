@@ -1,105 +1,28 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>GraphQL Request Lab</title>
-  <style>
-    :root { color-scheme: dark; --bg:#0a1020; --panel:#111b2e; --line:#263650; --text:#edf3ff; --muted:#9aaac3; --accent:#7c9cff; --danger:#ff8f8f; --green:#80e0b2; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#172746 0,#0a1020 60%); color:var(--text); font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
-    main { max-width:1100px; margin:0 auto; padding:36px 20px 60px; }
-    .eyebrow { color:#a9bcff; text-transform:uppercase; letter-spacing:.14em; font-size:12px; font-weight:800; }
-    h1 { margin:8px 0; font-size:clamp(28px,5vw,44px); letter-spacing:-.04em; }
-    .intro { color:var(--muted); max-width:760px; }
-    .warning { margin:22px 0; padding:14px 16px; border:1px solid #755a34; background:#2b2116; border-radius:12px; color:#ffe0a5; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:20px; }
-    section { min-width:0; background:rgba(17,27,46,.92); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:0 16px 48px #0002; }
-    h2 { margin:0 0 14px; font-size:18px; }
-    label { display:block; color:var(--muted); margin:12px 0 6px; font-size:13px; }
-    input { width:100%; padding:12px 13px; border-radius:9px; border:1px solid var(--line); color:var(--text); background:#0b1323; font:inherit; }
-    button { margin-top:14px; padding:12px 16px; border:0; border-radius:10px; background:var(--accent); color:#071023; font-weight:800; font-size:14px; cursor:pointer; }
-    button:disabled { opacity:.6; cursor:wait; }
-    pre { white-space:pre-wrap; overflow-wrap:anywhere; overflow:auto; max-height:520px; margin:0; padding:14px; border-radius:10px; background:#070c16; border:1px solid #202d43; color:#cfe0ff; font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace; }
-    .status { margin-top:12px; color:var(--green); font-weight:700; }
-    .muted { color:var(--muted); font-size:13px; }
-    .loghead { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
-    .smallbtn { margin:0; padding:7px 10px; font-size:12px; background:#263650; color:var(--text); }
-    footer { margin-top:22px; color:var(--muted); font-size:12px; }
-    @media(max-width:760px) { .grid { grid-template-columns:1fr; } main { padding:24px 14px 40px; } section { padding:15px; } }
-  </style>
-</head>
-<body>
-<main>
-  <div class="eyebrow">Developer playground</div>
-  <h1>GraphQL Request Lab</h1>
-  <p class="intro">Учебная панель для изучения GraphQL: имя операции, тело запроса, variables и формат ошибок. Запрос обрабатывается только локальным демонстрационным endpoint.</p>
-  <div class="warning"><strong>Безопасный режим:</strong> запрос не отправляется в Render Dashboard или другой внешний сервер. API-ключ не создаётся. Не вводи сюда реальные cookie, токены или данные сессии.</div>
-
-  <div class="grid">
-    <section>
-      <h2>Параметры теста</h2>
-      <label for="label">Значение переменной labelTest</label>
-      <input id="label" maxlength="80" value="WorldGame-Test" autocomplete="off">
-      <button id="run">Сформировать запрос и показать ошибку</button>
-      <div class="status" id="status" role="status">Готов к локальному тесту</div>
-      <p class="muted">Кнопка отправляет данные только на <code>/api/demo-mutation</code> этого приложения. Сервер возвращает смоделированную GraphQL-ошибку валидации.</p>
-    </section>
-    <section>
-      <div class="loghead"><h2>Окно логов</h2><button class="smallbtn" id="clear" type="button">Очистить</button></div>
-      <pre id="logs" aria-live="polite">[готово] Локальная демонстрация запущена.
-[защита] Внешние запросы отключены.
-[защита] Секреты не запрашиваются и не логируются.</pre>
-    </section>
-    <section>
-      <h2>Сформированное тело запроса</h2>
-      <pre id="request">Нажми кнопку, чтобы сформировать пример.</pre>
-    </section>
-    <section>
-      <h2>Ответ сервера</h2>
-      <pre id="response">Ответ появится после теста.</pre>
-    </section>
-  </div>
-  <footer>GraphQL Request Lab · демонстрационный проект · не является интеграцией выпуска Render API-ключей.</footer>
-</main>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Request Lab</title><style>
+body{font:16px system-ui;background:#0a1020;color:#edf3ff;max-width:1000px;margin:32px auto;padding:0 16px}section{background:#111b2e;border:1px solid #263650;border-radius:12px;padding:16px;margin:16px 0}input,button{padding:10px;border-radius:8px}input{width:70%;background:#0b1323;color:white;border:1px solid #263650}button{cursor:pointer;background:#7c9cff;border:0;font-weight:bold}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#070c16;padding:14px;border-radius:8px;max-height:440px;overflow:auto;color:#cfe0ff}.muted{color:#9aaac3}</style></head><body>
+<h1>Request Lab</h1><p class="muted">Учебный тест: создаём объект для просмотра, очищаем его и отправляем пустое тело на тестовый endpoint этого приложения.</p>
+<section><label for="label">Метка примера </label><input id="label" value="WorldGame-Test"><button id="run">Запустить тест</button><p id="status">Готово</p></section>
+<section><h2>Логи</h2><button id="clear">Очистить</button><pre id="logs">Панель запущена. Внешние сервисы не вызываются.</pre></section>
+<section><h2>Предпросмотр</h2><pre id="preview">Нажми «Запустить тест».</pre></section>
+<section><h2>HTTP-ответ</h2><pre id="response">Ответ появится здесь.</pre></section>
 <script>
-  const $ = (id) => document.getElementById(id);
-  const appendLog = (message) => {
-    const stamp = new Date().toLocaleTimeString();
-    $("logs").textContent += "\n[" + stamp + "] " + message;
-    $("logs").scrollTop = $("logs").scrollHeight;
-  };
-
-  $("clear").addEventListener("click", () => {
-    $("logs").textContent = "[логи очищены]";
-  });
-
-  $("run").addEventListener("click", async () => {
-    const button = $("run");
-    button.disabled = true;
-    $("status").textContent = "Выполняется локальная демонстрация…";
-    appendLog("POST /api/demo-mutation");
-    try {
-      const response = await fetch("/api/demo-mutation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: $("label").value })
-      });
-      const data = await response.json();
-      $("request").textContent = JSON.stringify(data.request ?? {}, null, 2);
-      $("response").textContent = JSON.stringify(data.live_response ?? data.response ?? data, null, 2);
-      appendLog("HTTP " + response.status + " — получен ответ от локального сервера");
-      appendLog("Render REST API: GET-запрос выполнен с фиктивным Bearer-значением");
-      appendLog("GraphQL-мутация создания ключа: не отправлялась");
-      appendLog("API-ключ создан: нет");
-      $("status").textContent = "Тест завершён: показана ожидаемая учебная ошибка.";
-    } catch (error) {
-      appendLog("Ошибка локального запроса: " + error.message);
-      $("status").textContent = "Не удалось выполнить локальный тест.";
-    } finally {
-      button.disabled = false;
-    }
-  });
-</script>
-</body>
-</html>
+const el=id=>document.getElementById(id);
+const log=s=>el("logs").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s;
+el("clear").onclick=()=>el("logs").textContent="[логи очищены]";
+el("run").onclick=async()=>{
+ const b=el("run");b.disabled=true;
+ try{
+  log("Подготовка примера.");
+  const a=await fetch("/api/demo-mutation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label:el("label").value})});
+  const d=await a.json();if(!a.ok)throw Error("HTTP "+a.status);
+  el("preview").textContent=JSON.stringify({preview_before_clear:d.request_preview,REQUEST_after_clear:d.outbound_body,request_cleared:d.request_cleared,outbound_body_length:d.outbound_body_length},null,2);
+  log('REQUEST очищен: "".');
+  log("Отправляем пустое тело на /api/empty-body-test.");
+  const r=await fetch("/api/empty-body-test",{method:"POST",headers:{"Content-Type":"text/plain"},body:""});
+  const x=await r.json();el("response").textContent=JSON.stringify({http_status:r.status,result:x},null,2);
+  log("Ответ тестового endpoint: HTTP "+r.status+". Получено байт: "+x.received_body_length+".");
+  el("status").textContent=x.body_is_empty?"Успех: тело пустое.":"Тело не пустое.";
+ }catch(e){log("Ошибка: "+e.message);el("status").textContent="Ошибка"}
+ finally{b.disabled=false}
+};
+</script></body></html>
