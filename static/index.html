@@ -87,9 +87,10 @@
       });
       const data = await response.json();
       $("request").textContent = JSON.stringify(data.request ?? {}, null, 2);
-      $("response").textContent = JSON.stringify(data.response ?? data, null, 2);
+      $("response").textContent = JSON.stringify(data.live_response ?? data.response ?? data, null, 2);
       appendLog("HTTP " + response.status + " — получен ответ от локального сервера");
-      appendLog("Внешний сервер: не вызывался");
+      appendLog("Render REST API: GET-запрос выполнен с фиктивным Bearer-значением");
+      appendLog("GraphQL-мутация создания ключа: не отправлялась");
       appendLog("API-ключ создан: нет");
       $("status").textContent = "Тест завершён: показана ожидаемая учебная ошибка.";
     } catch (error) {
