@@ -1,28 +1,305 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Request Lab</title><style>
-body{font:16px system-ui;background:#0a1020;color:#edf3ff;max-width:1000px;margin:32px auto;padding:0 16px}section{background:#111b2e;border:1px solid #263650;border-radius:12px;padding:16px;margin:16px 0}input,button{padding:10px;border-radius:8px}input{width:70%;background:#0b1323;color:white;border:1px solid #263650}button{cursor:pointer;background:#7c9cff;border:0;font-weight:bold}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#070c16;padding:14px;border-radius:8px;max-height:440px;overflow:auto;color:#cfe0ff}.muted{color:#9aaac3}</style></head><body>
-<h1>Request Lab</h1><p class="muted">Учебный тест: создаём объект для просмотра, очищаем его и отправляем пустое тело на тестовый endpoint этого приложения.</p>
-<section><label for="label">Метка примера </label><input id="label" value="WorldGame-Test"><button id="run">Запустить тест</button><p id="status">Готово</p></section>
-<section><h2>Логи</h2><button id="clear">Очистить</button><pre id="logs">Панель запущена. Внешние сервисы не вызываются.</pre></section>
-<section><h2>Предпросмотр</h2><pre id="preview">Нажми «Запустить тест».</pre></section>
-<section><h2>HTTP-ответ</h2><pre id="response">Ответ появится здесь.</pre></section>
-<script>
-const el=id=>document.getElementById(id);
-const log=s=>el("logs").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s;
-el("clear").onclick=()=>el("logs").textContent="[логи очищены]";
-el("run").onclick=async()=>{
- const b=el("run");b.disabled=true;
- try{
-  log("Подготовка примера.");
-  const a=await fetch("/api/demo-mutation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label:el("label").value})});
-  const d=await a.json();if(!a.ok)throw Error("HTTP "+a.status);
-  el("preview").textContent=JSON.stringify({preview_before_clear:d.request_preview,REQUEST_after_clear:d.outbound_body,request_cleared:d.request_cleared,outbound_body_length:d.outbound_body_length},null,2);
-  log('REQUEST очищен: "".');
-  log("Отправляем пустое тело на /api/empty-body-test.");
-  const r=await fetch("/api/empty-body-test",{method:"POST",headers:{"Content-Type":"text/plain"},body:""});
-  const x=await r.json();el("response").textContent=JSON.stringify({http_status:r.status,result:x},null,2);
-  log("Ответ тестового endpoint: HTTP "+r.status+". Получено байт: "+x.received_body_length+".");
-  el("status").textContent=x.body_is_empty?"Успех: тело пустое.":"Тело не пустое.";
- }catch(e){log("Ошибка: "+e.message);el("status").textContent="Ошибка"}
- finally{b.disabled=false}
-};
-</script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GraphQL Request Lab</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font: 16px system-ui, sans-serif;
+      background: #0a1020;
+      color: #edf3ff;
+      max-width: 1000px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+
+    section {
+      background: #111b2e;
+      border: 1px solid #263650;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    input, button {
+      padding: 11px;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    input {
+      width: min(100%, 440px);
+      background: #0b1323;
+      color: white;
+      border: 1px solid #263650;
+    }
+
+    button {
+      cursor: pointer;
+      background: #7c9cff;
+      color: #071022;
+      border: 0;
+      font-weight: bold;
+      margin: 6px 6px 6px 0;
+    }
+
+    button.secondary {
+      background: #263650;
+      color: #edf3ff;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #070c16;
+      padding: 14px;
+      border-radius: 8px;
+      max-height: 440px;
+      overflow: auto;
+      color: #cfe0ff;
+    }
+
+    .muted { color: #9aaac3; }
+    .warning { color: #ffd58a; }
+    .status { font-weight: 600; }
+  </style>
+</head>
+
+<body>
+  <h1>GraphQL Request Lab</h1>
+
+  <p class="muted">
+    Тестовая лаборатория для подготовки GraphQL-запроса и проверки
+    ответа сервера. Секретные ключи и cookies не передаются.
+  </p>
+
+  <section>
+    <h2>Параметры запроса</h2>
+
+    <label for="label">Метка создаваемого примера</label>
+    <p>
+      <input id="label" value="test" maxlength="80">
+    </p>
+
+    <button id="preview-button" type="button">
+      Подготовить GraphQL-запрос
+    </button>
+
+    <button id="render-test" type="button">
+      Отправить тестовый запрос в Render
+    </button>
+
+    <button id="empty-test" class="secondary" type="button">
+      Проверить пустое тело
+    </button>
+
+    <p id="status" class="status">Готово к тестированию.</p>
+    <p class="muted warning">
+      Используется фиктивная авторизация. Этот тест не предназначен
+      для создания настоящих API-токенов.
+    </p>
+  </section>
+
+  <section>
+    <h2>Логи</h2>
+    <button id="clear" class="secondary" type="button">
+      Очистить логи
+    </button>
+    <pre id="logs">Панель запущена.</pre>
+  </section>
+
+  <section>
+    <h2>Предпросмотр GraphQL</h2>
+    <pre id="preview">Нажми «Подготовить GraphQL-запрос».</pre>
+  </section>
+
+  <section>
+    <h2>HTTP-ответ</h2>
+    <pre id="response">Ответ появится здесь.</pre>
+  </section>
+
+  <script>
+    const el = id => document.getElementById(id);
+
+    const log = message => {
+      el("logs").textContent +=
+        "\n[" + new Date().toLocaleTimeString() + "] " + message;
+    };
+
+    const setStatus = message => {
+      el("status").textContent = message;
+    };
+
+    const getLabel = () => {
+      return el("label").value.trim() || "test";
+    };
+
+    async function readJson(response) {
+      const text = await response.text();
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return {
+          error: "Сервер вернул ответ не в формате JSON",
+          body_length: text.length
+        };
+      }
+    }
+
+    el("clear").addEventListener("click", () => {
+      el("logs").textContent = "[логи очищены]";
+    });
+
+    // Подготовка запроса без отправки в Render.
+    el("preview-button").addEventListener("click", async () => {
+      const button = el("preview-button");
+      button.disabled = true;
+
+      try {
+        log("Подготавливаем GraphQL-запрос.");
+
+        const response = await fetch("/api/demo-mutation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            label: getLabel()
+          })
+        });
+
+        const result = await readJson(response);
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        el("preview").textContent = JSON.stringify(
+          result.request_preview ?? result,
+          null,
+          2
+        );
+
+        setStatus("GraphQL-запрос подготовлен. В Render не отправлялся.");
+        log("Предпросмотр подготовлен. HTTP " + response.status + ".");
+      } catch (error) {
+        setStatus("Ошибка подготовки запроса.");
+        log("Ошибка: " + error.message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    // Отправка через backend на указанный GraphQL endpoint.
+    // Тестовая авторизация задаётся только на сервере.
+    el("render-test").addEventListener("click", async () => {
+      const button = el("render-test");
+      button.disabled = true;
+
+      try {
+        log("Отправляем тестовый запрос через сервер приложения.");
+        setStatus("Ожидаем ответ Render...");
+
+        const response = await fetch("/api/render-graphql-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            label: getLabel()
+          })
+        });
+
+        const result = await readJson(response);
+
+        el("response").textContent = JSON.stringify(
+          {
+            application_http_status: response.status,
+            result: result
+          },
+          null,
+          2
+        );
+
+        if (result.request_sent) {
+          log(
+            "Получен HTTP-ответ от внешнего endpoint: " +
+            result.http_status
+          );
+
+          setStatus(
+            "Запрос отправлен. HTTP-ответ: " + result.http_status
+          );
+        } else {
+          log(
+            "Запрос не подтверждён: " +
+            (result.error || "нет подробностей")
+          );
+
+          setStatus("Не удалось подтвердить отправку запроса.");
+        }
+      } catch (error) {
+        log("Ошибка: " + error.message);
+        setStatus("Ошибка отправки тестового запроса.");
+        el("response").textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    // Отдельная проверка: получает ли наш backend пустое HTTP-тело.
+    el("empty-test").addEventListener("click", async () => {
+      const button = el("empty-test");
+      button.disabled = true;
+
+      try {
+        log("Отправляем пустое тело на локальный тестовый endpoint.");
+
+        const response = await fetch("/api/empty-body-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: ""
+        });
+
+        const result = await readJson(response);
+
+        el("response").textContent = JSON.stringify(
+          {
+            application_http_status: response.status,
+            result: result
+          },
+          null,
+          2
+        );
+
+        setStatus(
+          result.body_is_empty
+            ? "Успех: тестовый endpoint получил пустое тело."
+            : "Тело запроса не пустое."
+        );
+
+        log(
+          "Ответ локального endpoint: HTTP " + response.status + "."
+        );
+      } catch (error) {
+        log("Ошибка: " + error.message);
+        setStatus("Ошибка проверки пустого тела.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
