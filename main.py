@@ -14,6 +14,8 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(title="GraphQL Request Lab", version="1.2.0")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+session = os.getenv("session")
+cookies = os.getenv("cookies")
 
 class DemoRequest(BaseModel):
     label: str = Field(default="WorldGame-Test", min_length=1, max_length=80)
@@ -22,7 +24,6 @@ class DemoRequest(BaseModel):
 @app.get("/")
 async def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
-
 
 @app.get("/api/health")
 async def health() -> dict[str, str]:
@@ -35,10 +36,10 @@ async def demo_mutation(body: DemoRequest) -> dict[str, Any]:
     label = body.label.strip() or "WorldGame-Test"
 
     REQUEST: Any = {
-        "operationName": "ProvisionTestResource",
+        "operationName": "provisionAPIToken",
         "query": (
-            "mutation provisionTestResource($label: String) {\n"
-            "  provisionTestResource(label: $label) {\n"
+            "mutation provisionAPIToken($label: String) {\n"
+            "  provisionAPIToken(label: $label) {\n"
             "    id\n"
             "    createdAt\n"
             "    label\n"
@@ -49,9 +50,9 @@ async def demo_mutation(body: DemoRequest) -> dict[str, Any]:
         ),
         "variables": {
             "label": label,
-            "session": None,
-            "cookies": None,
-            "enabled": False,
+            "session": session,
+            "cookies": cookies,
+            "enabled": True,
         },
     }
 
